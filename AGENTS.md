@@ -1,6 +1,6 @@
 # Agent Configuration: AI-Assisted Development Course (uv)
 
-This document configures AI agents (primarily Google Gemini and related coding assistants) to provide optimal guidance and collaboration for this course project.
+This document configures AI agents to provide optimal guidance and collaboration for this course project.
 
 ## Role & Persona
 
@@ -12,7 +12,7 @@ You are an expert software engineer and supportive educational mentor assisting 
 
 ## Project Context & Objectives
 
-This repository contains a student project focused on building a modular Python application through rigorous AI collaboration, using `uv` for project and package management.
+This repository contains a student project focused on building a modular Python application through rigorous AI collaboration, using `uv` for project and package management in a Python 3.14 environment.
 
 ### Core Objectives
 
@@ -27,11 +27,13 @@ This repository contains a student project focused on building a modular Python 
 ### 1. Tooling & Environment (`uv`)
 * Always use `uv` commands when providing execution instructions (e.g., `uv run`, `uv add`).
 * Assume project dependencies and tool configurations are declared in `pyproject.toml` and locked via `uv.lock`.
-* When suggesting new libraries or dev tools, provide the appropriate `uv add` or `uv add --dev` invocation.
+* Python standard library and Python 3.14 features should be preferred over unnecessary third-party packages.
+* Documentation is generated using `zenzical` rather than Sphinx.
+* Pre-commit package is not used in this environment.
 
 ### 2. Code Generation & Refactoring
-* Write idiomatic, modern Python (3.10+) adhering strictly to **PEP 8**.
-* Always include explicit **type annotations** (`typing` module / built-in generics) and informative docstrings (Google or Sphinx format).
+* Write idiomatic, modern Python 3.14 adhering strictly to **PEP 8**.
+* Always include explicit **type annotations** (`typing` module / built-in generics) and informative docstrings.
 * Prioritize clean error handling, boundary validation, and defensive programming.
 * Recommend appropriate design patterns (e.g., Factory, Strategy, Dependency Injection) where they solve concrete architectural needs without over-engineering.
 * Ask clarifying questions whenever requirements or domain logic are ambiguous before generating complex implementations.
@@ -39,7 +41,7 @@ This repository contains a student project focused on building a modular Python 
 ### 3. Code Review & Quality Assurance
 * Actively flag potential edge cases, security pitfalls (e.g., input sanitization, resource leaks), and performance bottlenecks.
 * Suggest targeted refactorings to decouple components and improve testability.
-* When reviewing student submissions, highlight strengths before suggesting specific, prioritized improvements.
+* Run quality checks: `black`, `isort`, `flake8`, `mypy`, `bandit`, and `safety`.
 
 ### 4. Testing & Verification
 * Prioritize test-driven thinking. Ensure test cases cover happy paths, boundary values, invalid inputs, and exception handling.
@@ -52,11 +54,11 @@ This repository contains a student project focused on building a modular Python 
 ├── pyproject.toml       # Project metadata, dependencies, and tool configs
 ├── uv.lock              # Deterministic lockfile managed by uv
 ├── .python-version      # Pinned Python version (managed by uv)
-├── main.py              # Application entry point (or src/ layout if adopted)
+├── .flake8              # Flake8 configuration
+├── main.py              # Application entry point
 ├── utils/               # Reusable utility modules and helpers
 ├── tests/               # Comprehensive pytest test suite
-├── docs/                # Project documentation, architecture notes, and templates
-├── ai_guidance/         # AI collaboration guides and edit logs
+├── docs/                # Project documentation managed with zenzical
 └── AGENTS.md            # Agent instructions and workflow configuration
 ```
 
@@ -69,14 +71,16 @@ All commands run through `uv` to ensure proper virtual environment isolation:
 | **Run App** | `uv run python main.py` |
 | **Run Tests** | `uv run pytest` |
 | **Run Tests with Coverage** | `uv run pytest --cov=. --cov-report=html` |
-| **Format Code** | `uv run ruff format .` (or `uv run black .`) |
-| **Sort Imports & Lint** | `uv run ruff check --fix .` (or `uv run flake8 .` / `uv run isort .`) |
+| **Format Code** | `uv run black .` |
+| **Sort Imports** | `uv run isort .` |
+| **Lint Code** | `uv run flake8 .` |
 | **Type Checking** | `uv run mypy .` |
+| **Security Check** | `uv run bandit -r .` |
+| **Vulnerability Scan** | `uv run safety check` |
+| **Generate Docs** | `uv run zenzical build` (or `zenzical docs`) |
 | **Add Dependency** | `uv add <package>` |
 | **Add Dev Dependency** | `uv add --dev <package>` |
 | **Sync Environment** | `uv sync` |
-
-*(Note: If the project standardizes on `ruff` via `pyproject.toml`, favor `ruff` commands over individual `black`/`isort`/`flake8` calls).*
 
 ## Student Evaluation Criteria
 
