@@ -1,53 +1,77 @@
 """
-File handling utility for data persistence.
-
-This module demonstrates file I/O operations and error handling
-patterns that students can learn from and extend.
+Data loading and validation module for flashcard data.
 """
 
 import json
+import sys
+from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Dict, cast
+from typing import Any, List, Union
 
 
-class FileHandler:
-    """Handle file operations for data persistence."""
+@dataclass
+class Flashcard:
+    """Represents a flashcard with front and back text content."""
 
-    def __init__(self, data_dir: str = "data"):
-        self.data_dir = Path(data_dir)
-        self.data_dir.mkdir(exist_ok=True)
+    front: str
+    back: str
 
-    def save_data(self, filename: str, data: Dict[str, Any]) -> None:
-        """Save data to a JSON file."""
-        filepath = self.data_dir / filename
-        try:
-            with open(filepath, "w", encoding="utf-8") as file:
-                json.dump(data, file, indent=2, ensure_ascii=False)
-        except (IOError, TypeError) as e:
-            raise RuntimeError(f"Failed to save data to {filename}: {e}")
 
-    def load_data(self, filename: str) -> Dict[str, Any]:
-        """Load data from a JSON file."""
-        filepath = self.data_dir / filename
-        try:
-            with open(filepath, "r", encoding="utf-8") as file:
-                loaded = json.load(file)
-                return cast(Dict[str, Any], loaded)
-        except FileNotFoundError:
-            return {}
-        except (IOError, json.JSONDecodeError) as e:
-            raise RuntimeError(f"Failed to load data from {filename}: {e}")
+def _validate_and_build_flashcard(item: Any) -> Flashcard:
+    """Validate a single dictionary item and convert it to Flashcard."""
+    if not isinstance(item, dict):
+        raise ValueError("Flashcard item must be a JSON object (dictionary).")
 
-    def file_exists(self, filename: str) -> bool:
-        """Check if a file exists in the data directory."""
-        return (self.data_dir / filename).exists()
+    if "front" not in item or "back" not in item:
+        raise KeyError("Missing required fields 'front' or 'back'.")
 
-    def delete_file(self, filename: str) -> None:
-        """Delete a file from the data directory."""
-        filepath = self.data_dir / filename
-        if filepath.exists():
-            filepath.unlink()
+    front = item["front"]
+    back = item["back"]
 
-    def list_files(self) -> list[str]:
-        """List all files in the data directory."""
-        return [f.name for f in self.data_dir.iterdir() if f.is_file()]
+    if not isinstance(front, str) or not isinstance(back, str):
+        raise ValueError("Fields 'front' and 'back' must be strings.")
+
+    front = front.strip()
+    back = back.strip()
+
+    if not front or not back:
+        raise ValueError("Fields 'front' and 'back' cannot be empty.")
+
+    return Flashcard(front=front, back=back)
+
+
+def load_flashcards(filepath: Union[str, Path]) -> List[Flashcard]:
+    """Load and validate flashcards from a JSON file.
+
+    Supports two formats:
+    1. Plain list: [{"front": "...", "back": "..."}]
+    2. Wrapped dict: {"cards": [{"front": "...", "back": "..."}]}
+
+    Exits gracefully with status code 1 on errors.
+    """
+    path = Path(filepath)
+    try:
+        with path.open("r", encoding="utf-8") as file:
+            data = json.load(file)
+
+        if isinstance(data, dict):
+            if "cards" not in data or not isinstance(data["cards"], list):
+                raise KeyError("Wrapped JSON format must contain a 'cards' list.")
+            items = data["cards"]
+        elif isinstance(data, list):
+            items = data
+        else:
+            raise ValueError("Root JSON element must be a list or object with 'cards'.")
+
+        return [_validate_and_build_flashcard(item) for item in items]
+
+    except FileNotFoundError:
+        sys.stderr.write(f"Error: File not found at '{path}'.\n")
+        sys.exit(1)
+    except json.JSONDecodeError as err:
+        sys.stderr.write(f"Error: Invalid JSON format in '{path}': {err}\n")
+        sys.exit(1)
+    except (KeyError, ValueError) as err:
+        clean_msg = str(err).strip("'\"")
+        sys.stderr.write(f"Error: Validation failed for '{path}': {clean_msg}\n")
+        sys.exit(1)
