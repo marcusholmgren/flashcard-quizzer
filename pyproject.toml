@@ -1,0 +1,37 @@
+[project]
+name = "flashcard-quizzer"
+version = "0.1.0"
+description = "Command line tool for practicing and memorizing new concepts"
+readme = "README.md"
+requires-python = ">=3.14,<3.15"
+dependencies = []
+
+[dependency-groups]
+dev = [
+    "bandit>=1.9.4",
+    "black>=26.5.1",
+    "flake8>=7.3.0",
+    "isort>=9.0.1",
+    "mypy>=2.3.1",
+    "pytest>=9.1.1",
+    "pytest-cov>=7.1.0",
+    "safety>=3.8.1",
+]
+
+[tool.black]
+line-length = 88
+target-version = ['py314']
+
+[tool.isort]
+profile = "black"
+line_length = 88
+
+[tool.mypy]
+python_version = "3.14"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = false
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-v --cov=. --cov-report=term-missing"
