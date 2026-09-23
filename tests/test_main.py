@@ -16,12 +16,15 @@ def test_main_success(capsys: pytest.CaptureFixture[str]) -> None:
         Flashcard("Q1", "A1"),
         Flashcard("Q2", "A2"),
     ]
-    with patch(
-        "flashcard_quizzer.main.load_flashcards", return_value=fake_cards
-    ) as mock_load:
-        main()
-        mock_load.assert_called_once_with("data/sample_flashcards.json")
+    with (
+        patch(
+            "flashcard_quizzer.main.load_flashcards", return_value=fake_cards
+        ) as mock_load,
+        patch("builtins.input", side_effect=["A1", "A2"]),
+    ):
+        main(["-f", "fake_path.json"])
+        mock_load.assert_called_once_with("fake_path.json")
 
     captured = capsys.readouterr()
     assert "Welcome to Flashcard Quizzer!" in captured.out
-    assert "Loaded 2 flashcards." in captured.out
+    assert "Loaded 2 flashcards in sequential mode." in captured.out
