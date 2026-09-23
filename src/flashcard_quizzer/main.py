@@ -2,7 +2,7 @@
 Main entry point for Flashcard Quizzer CLI application.
 """
 
-from utils.file_handler import load_flashcards
+from flashcard_quizzer.utils.file_handler import load_flashcards
 
 
 def main() -> None:
