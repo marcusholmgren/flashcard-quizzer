@@ -7,7 +7,7 @@ examples for students to follow when writing their own tests.
 
 import pytest
 
-from utils.task_manager import TaskManager
+from flashcard_quizzer.utils.task_manager import TaskManager
 
 
 class TestTaskManager:

@@ -6,6 +6,9 @@ readme = "README.md"
 requires-python = ">=3.14,<3.15"
 dependencies = []
 
+[project.scripts]
+flashcard-quizzer = "flashcard_quizzer.main:main"
+
 [dependency-groups]
 dev = [
     "bandit>=1.9.4",
@@ -31,7 +34,9 @@ python_version = "3.14"
 warn_return_any = true
 warn_unused_configs = true
 disallow_untyped_defs = false
+mypy_path = "src"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-addopts = "-v --cov=. --cov-report=term-missing"
+pythonpath = ["src"]
+addopts = "-v --cov=src/flashcard_quizzer --cov-report=term-missing"

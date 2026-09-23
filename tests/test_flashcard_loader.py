@@ -7,7 +7,7 @@ from pathlib import Path
 
 import pytest
 
-from utils.file_handler import Flashcard, load_flashcards
+from flashcard_quizzer.utils.file_handler import Flashcard, load_flashcards
 
 
 def test_load_valid_flashcards_array(tmp_path: Path) -> None:
