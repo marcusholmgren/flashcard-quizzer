@@ -1,0 +1,10 @@
+[
+  {
+    "front": "What is Python?",
+    "back": "A high-level, general-purpose programming language."
+  },
+  {
+    "front": "What tool is used for dependency management in this project?",
+    "back": "uv"
+  }
+]

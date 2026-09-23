@@ -6,8 +6,13 @@ readme = "README.md"
 requires-python = ">=3.14,<3.15"
 dependencies = []
 
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
 [project.scripts]
 flashcard-quizzer = "flashcard_quizzer.main:main"
+
 
 [dependency-groups]
 dev = [
