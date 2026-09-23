@@ -1,4 +1,6 @@
-# flashcard-quizzer
+# Flashcard Quizzer
+
+[![CI](https://github.com/marcusholmgren/flashcard-quizzer/actions/workflows/ci.yml/badge.svg)](https://github.com/marcusholmgren/flashcard-quizzer/actions/workflows/ci.yml)
 
 Command line tool for practicing and memorizing new concepts.
 
