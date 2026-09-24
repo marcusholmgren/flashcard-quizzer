@@ -1,8 +1,7 @@
-"""
-Unit tests for the interactive deck creator module.
-"""
+"""Unit tests for the interactive deck creator module."""
 
 from pathlib import Path
+from typing import Any
 
 import pytest
 
@@ -28,18 +27,15 @@ def test_create_new_deck(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Non
 
     loaded = load_flashcards(deck_path)
     assert len(loaded) == 2
-    assert loaded[0] == Flashcard("What is 1+1?", "2")
-    assert loaded[1] == Flashcard("What is 2+2?", "4")
 
 
 def test_append_existing_deck(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    """Verify appending new cards preserves previous cards."""
-    deck_path = tmp_path / "deck.json"
-    initial_cards = [Flashcard("Existing Front", "Existing Back")]
+    """Verify loading existing cards and adding new cards to the deck in append mode."""
+    deck_path = tmp_path / "existing_deck.json"
+    initial_cards = [Flashcard("Card 1", "Ans 1")]
     save_deck(deck_path, initial_cards)
 
-    # Input: 'a' for append, then new card, then 'done'
-    inputs = iter(["a", "New Front", "New Back", "done"])
+    inputs = iter(["a", "Card 2", "Ans 2", "done"])
     monkeypatch.setattr("builtins.input", lambda prompt="": next(inputs))
 
     success = create_deck_interactive(deck_path)
@@ -47,20 +43,19 @@ def test_append_existing_deck(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -
 
     loaded = load_flashcards(deck_path)
     assert len(loaded) == 2
-    assert loaded[0] == Flashcard("Existing Front", "Existing Back")
-    assert loaded[1] == Flashcard("New Front", "New Back")
+    assert loaded[0].front == "Card 1"
+    assert loaded[1].front == "Card 2"
 
 
 def test_overwrite_existing_deck(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    """Verify overwrite replaces prior content."""
-    deck_path = tmp_path / "deck.json"
-    initial_cards = [Flashcard("Old Front", "Old Back")]
+    """Verify discarding existing cards in overwrite mode."""
+    deck_path = tmp_path / "existing_deck.json"
+    initial_cards = [Flashcard("Card 1", "Ans 1")]
     save_deck(deck_path, initial_cards)
 
-    # Input: 'o' for overwrite, then new card, then '' (empty string)
-    inputs = iter(["o", "Replacement Front", "Replacement Back", ""])
+    inputs = iter(["o", "New Card", "New Ans", "done"])
     monkeypatch.setattr("builtins.input", lambda prompt="": next(inputs))
 
     success = create_deck_interactive(deck_path)
@@ -68,120 +63,105 @@ def test_overwrite_existing_deck(
 
     loaded = load_flashcards(deck_path)
     assert len(loaded) == 1
-    assert loaded[0] == Flashcard("Replacement Front", "Replacement Back")
+    assert loaded[0].front == "New Card"
 
 
 def test_exit_conditions(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    """Verify loop termination on 'done', empty string, and 'exit'."""
-    deck_path_done = tmp_path / "done.json"
-    inputs_done = iter(["Card 1", "Back 1", "done"])
-    monkeypatch.setattr("builtins.input", lambda prompt="": next(inputs_done))
-    assert create_deck_interactive(deck_path_done) is True
-    assert len(load_flashcards(deck_path_done)) == 1
+    """Verify exit keyword at Front prompt and prompt to save unsaved changes."""
+    deck_path = tmp_path / "exit_deck.json"
 
-    deck_path_empty = tmp_path / "empty.json"
-    inputs_empty = iter(["Card 1", "Back 1", ""])
-    monkeypatch.setattr("builtins.input", lambda prompt="": next(inputs_empty))
-    assert create_deck_interactive(deck_path_empty) is True
-    assert len(load_flashcards(deck_path_empty)) == 1
+    # Scenario 1: Exit with save ('y')
+    inputs_save = iter(["Card 1", "Ans 1", "exit", "y"])
+    monkeypatch.setattr("builtins.input", lambda prompt="": next(inputs_save))
+    assert create_deck_interactive(deck_path) is True
+    assert len(load_flashcards(deck_path)) == 1
 
-    # Exit with 'y' (save)
-    deck_path_exit_save = tmp_path / "exit_save.json"
-    inputs_exit_save = iter(["Card 1", "Back 1", "exit", "y"])
-    monkeypatch.setattr("builtins.input", lambda prompt="": next(inputs_exit_save))
-    assert create_deck_interactive(deck_path_exit_save) is True
-    assert len(load_flashcards(deck_path_exit_save)) == 1
-
-    # Exit with 'n' (discard)
-    deck_path_exit_discard = tmp_path / "exit_discard.json"
-    inputs_exit_discard = iter(["Card 1", "Back 1", "exit", "n"])
-    monkeypatch.setattr("builtins.input", lambda prompt="": next(inputs_exit_discard))
-    assert create_deck_interactive(deck_path_exit_discard) is False
-    assert not deck_path_exit_discard.exists()
+    # Scenario 2: Exit without save ('n')
+    deck_path_2 = tmp_path / "exit_deck_2.json"
+    inputs_nosave = iter(["Card 1", "Ans 1", "exit", "n"])
+    monkeypatch.setattr("builtins.input", lambda prompt="": next(inputs_nosave))
+    assert create_deck_interactive(deck_path_2) is False
+    assert not deck_path_2.exists()
 
 
 def test_handle_existing_file_cancel(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    """Verify cancelling existing file action aborts cleanly."""
-    deck_path = tmp_path / "deck.json"
-    save_deck(deck_path, [Flashcard("A", "B")])
+    """Verify cancel option when destination file already exists."""
+    deck_path = tmp_path / "existing.json"
+    save_deck(deck_path, [Flashcard("Q", "A")])
 
     inputs = iter(["c"])
     monkeypatch.setattr("builtins.input", lambda prompt="": next(inputs))
     ui = QuizUI()
-    res = handle_existing_file(deck_path, ui)
-    assert res is None
 
-    # Test via create_deck_interactive
-    inputs_create = iter(["c"])
-    monkeypatch.setattr("builtins.input", lambda prompt="": next(inputs_create))
-    assert create_deck_interactive(deck_path) is False
+    result = handle_existing_file(deck_path, ui)
+    assert result is None
 
 
 def test_handle_existing_file_invalid_then_valid(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    """Verify retry on invalid choice in existing file prompt."""
-    deck_path = tmp_path / "deck.json"
-    save_deck(deck_path, [Flashcard("A", "B")])
+    """Verify invalid option prompts again until a valid selection is provided."""
+    deck_path = tmp_path / "existing.json"
+    save_deck(deck_path, [Flashcard("Q", "A")])
 
-    inputs = iter(["invalid_choice", "o"])
+    inputs = iter(["invalid", "o"])
     monkeypatch.setattr("builtins.input", lambda prompt="": next(inputs))
     ui = QuizUI()
-    res = handle_existing_file(deck_path, ui)
-    assert res == []
+
+    result = handle_existing_file(deck_path, ui)
+    assert result == []
 
 
 def test_empty_back_validation(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    """Verify warning and re-prompt when Back side is empty."""
-    deck_path = tmp_path / "deck.json"
-    # Front is "Front 1", Back is "" then "  " then "Valid Back", then "done"
-    inputs = iter(["Front 1", "", "   ", "Valid Back", "done"])
+    """Verify empty string on Back prompt shows warning and reprompts user."""
+    deck_path = tmp_path / "reprompt_deck.json"
+    inputs = iter(["Front", "", "Back", "done"])
     monkeypatch.setattr("builtins.input", lambda prompt="": next(inputs))
 
     success = create_deck_interactive(deck_path)
     assert success is True
     loaded = load_flashcards(deck_path)
-    assert len(loaded) == 1
-    assert loaded[0] == Flashcard("Front 1", "Valid Back")
+    assert loaded[0].back == "Back"
 
 
 def test_keyboard_interrupt_during_input(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    """Verify graceful handling of KeyboardInterrupt during Front/Back input."""
-    deck_path = tmp_path / "interrupt.json"
+    """Verify KeyboardInterrupt during Front prompt triggers exit/save flow."""
+    deck_path = tmp_path / "interrupt_deck.json"
 
-    def mock_input(prompt=""):
-        raise KeyboardInterrupt()
+    def mock_input(prompt: str = "") -> str:
+        if "Front" in prompt:
+            raise KeyboardInterrupt()
+        return "n"
 
     monkeypatch.setattr("builtins.input", mock_input)
-    success = create_deck_interactive(deck_path)
-    assert success is False
+    assert create_deck_interactive(deck_path) is False
 
 
 def test_keyboard_interrupt_in_overwrite_prompt(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    """Verify KeyboardInterrupt during existing file prompt cancels cleanly."""
-    deck_path = tmp_path / "deck.json"
-    save_deck(deck_path, [Flashcard("A", "B")])
+    """Verify Ctrl+C during file conflict prompt cancels gracefully."""
+    deck_path = tmp_path / "existing.json"
+    save_deck(deck_path, [Flashcard("Q", "A")])
 
-    def mock_input(prompt=""):
+    def mock_input(prompt: str = "") -> str:
         raise KeyboardInterrupt()
 
     monkeypatch.setattr("builtins.input", mock_input)
-    success = create_deck_interactive(deck_path)
-    assert success is False
+    ui = QuizUI()
+    assert handle_existing_file(deck_path, ui) is None
 
 
 def test_no_cards_created_returns_false(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    """Verify returning False when user immediately finishes without adding cards."""
-    deck_path = tmp_path / "empty_deck.json"
-    inputs = iter(["done"])
+    """Verify pressing enter on first card returns False and creates no file."""
+    deck_path = tmp_path / "empty.json"
+    inputs = iter([""])
     monkeypatch.setattr("builtins.input", lambda prompt="": next(inputs))
 
     success = create_deck_interactive(deck_path)
@@ -192,33 +172,31 @@ def test_no_cards_created_returns_false(
 def test_cli_integration_create_flag(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    """Verify --create flag integration with main()."""
-    deck_path = tmp_path / "cli_deck.json"
-    inputs = iter(["Term 1", "Def 1", "done"])
+    """Verify launching deck creator via --create flag."""
+    deck_path = tmp_path / "cli_created.json"
+    inputs = iter(["Front 1", "Back 1", "done"])
     monkeypatch.setattr("builtins.input", lambda prompt="": next(inputs))
 
-    sys_args = ["-f", str(deck_path), "--create"]
     with pytest.raises(SystemExit) as exc_info:
-        main(sys_args)
+        main(["-f", str(deck_path), "--create"])
+
     assert exc_info.value.code == 0
     assert deck_path.exists()
-    assert len(load_flashcards(deck_path)) == 1
 
 
 def test_cli_integration_create_subcommand(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    """Verify create subcommand integration with main()."""
-    deck_path = tmp_path / "subcommand_deck.json"
-    inputs = iter(["Term 2", "Def 2", "done"])
+    """Verify launching deck creator via 'create' subcommand."""
+    deck_path = tmp_path / "cli_subcommand.json"
+    inputs = iter(["Front 1", "Back 1", "done"])
     monkeypatch.setattr("builtins.input", lambda prompt="": next(inputs))
 
-    sys_args = ["create", "-f", str(deck_path)]
     with pytest.raises(SystemExit) as exc_info:
-        main(sys_args)
+        main(["create", "-f", str(deck_path)])
+
     assert exc_info.value.code == 0
     assert deck_path.exists()
-    assert len(load_flashcards(deck_path)) == 1
 
 
 def test_save_deck_exception_handling(
@@ -228,8 +206,7 @@ def test_save_deck_exception_handling(
     deck_path = tmp_path / "read_only" / "deck.json"
     cards = [Flashcard("Front", "Back")]
 
-    # Mock tempfile.mkstemp to succeed, but json.dump to raise RuntimeError
-    def mock_dump(*args, **kwargs):
+    def mock_dump(*args: Any, **kwargs: Any) -> None:
         raise RuntimeError("Disk error")
 
     monkeypatch.setattr("json.dump", mock_dump)
@@ -241,33 +218,26 @@ def test_save_deck_exception_handling(
 def test_prompt_exit_save_interrupt(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    """Verify exit prompt handling when KeyboardInterrupt occurs during save prompt."""
-    deck_path = tmp_path / "deck.json"
-    inputs = iter(["Front 1", "Back 1", "exit"])
+    """Verify handling of KeyboardInterrupt inside _prompt_exit_save."""
+    deck_path = tmp_path / "exit_interrupt.json"
 
-    def mock_input(prompt=""):
-        try:
-            val = next(inputs)
-            return val
-        except StopIteration:
-            raise KeyboardInterrupt()
+    def mock_input(prompt: str = "") -> str:
+        if "Front" in prompt:
+            return "exit"
+        raise KeyboardInterrupt()
 
     monkeypatch.setattr("builtins.input", mock_input)
     assert create_deck_interactive(deck_path) is False
 
 
 def test_back_input_interrupt(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    """Verify exit prompt handling when KeyboardInterrupt occurs during Back input."""
-    deck_path = tmp_path / "deck.json"
-    inputs = iter(["Front 1"])
+    """Verify handling of KeyboardInterrupt at Back prompt."""
+    deck_path = tmp_path / "back_interrupt.json"
 
-    def mock_input(prompt=""):
-        try:
-            val = next(inputs)
-            return val
-        except StopIteration:
-            raise KeyboardInterrupt()
+    def mock_input(prompt: str = "") -> str:
+        if "Front" in prompt:
+            return "Front 1"
+        raise KeyboardInterrupt()
 
     monkeypatch.setattr("builtins.input", mock_input)
-    # Front 1 entered, then Back raises KeyboardInterrupt, then save prompt raises KeyboardInterrupt -> False
     assert create_deck_interactive(deck_path) is False

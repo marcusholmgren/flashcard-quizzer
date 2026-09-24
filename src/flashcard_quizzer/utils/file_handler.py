@@ -1,6 +1,4 @@
-"""
-Data loading and validation module for flashcard data.
-"""
+"""Data loading and validation module for flashcard data."""
 
 import json
 import sys
@@ -17,27 +15,38 @@ class Flashcard:
     back: str
 
 
-def _validate_and_build_flashcard(item: Any) -> Flashcard:
-    """Validate a single dictionary item and convert it to Flashcard."""
-    if not isinstance(item, dict):
+def _validate_and_build_flashcard(raw_item: Any) -> Flashcard:
+    """Validate a single dictionary item and convert it to Flashcard.
+
+    Args:
+        raw_item: Object expected to be a valid flashcard dictionary.
+
+    Returns:
+        Flashcard: Validated Flashcard instance with trimmed whitespace.
+
+    Raises:
+        ValueError: If raw_item is not a dict, or fields are not non-empty strings.
+        KeyError: If required keys 'front' or 'back' are missing.
+    """
+    if not isinstance(raw_item, dict):
         raise ValueError("Flashcard item must be a JSON object (dictionary).")
 
-    if "front" not in item or "back" not in item:
+    if "front" not in raw_item or "back" not in raw_item:
         raise KeyError("Missing required fields 'front' or 'back'.")
 
-    front = item["front"]
-    back = item["back"]
+    front_text = raw_item["front"]
+    back_text = raw_item["back"]
 
-    if not isinstance(front, str) or not isinstance(back, str):
+    if not isinstance(front_text, str) or not isinstance(back_text, str):
         raise ValueError("Fields 'front' and 'back' must be strings.")
 
-    front = front.strip()
-    back = back.strip()
+    front_text = front_text.strip()
+    back_text = back_text.strip()
 
-    if not front or not back:
+    if not front_text or not back_text:
         raise ValueError("Fields 'front' and 'back' cannot be empty.")
 
-    return Flashcard(front=front, back=back)
+    return Flashcard(front=front_text, back=back_text)
 
 
 def load_flashcards(filepath: Union[str, Path]) -> List[Flashcard]:
@@ -47,12 +56,19 @@ def load_flashcards(filepath: Union[str, Path]) -> List[Flashcard]:
     1. Plain list: [{"front": "...", "back": "..."}]
     2. Wrapped dict: {"cards": [{"front": "...", "back": "..."}]}
 
-    Exits gracefully with status code 1 on errors.
+    Args:
+        filepath: Path to JSON flashcard deck file.
+
+    Returns:
+        List[Flashcard]: List of validated Flashcard objects.
+
+    Raises:
+        SystemExit: Gracefully exits with status code 1 on errors.
     """
-    path = Path(filepath)
+    target_path = Path(filepath)
     try:
-        with path.open("r", encoding="utf-8") as file:
-            data = json.load(file)
+        with target_path.open("r", encoding="utf-8") as file_handle:
+            data = json.load(file_handle)
 
         if isinstance(data, dict):
             if "cards" not in data or not isinstance(data["cards"], list):
@@ -66,12 +82,16 @@ def load_flashcards(filepath: Union[str, Path]) -> List[Flashcard]:
         return [_validate_and_build_flashcard(item) for item in items]
 
     except FileNotFoundError:
-        sys.stderr.write(f"Error: File not found at '{path}'.\n")
+        sys.stderr.write(f"Error: File not found at '{target_path}'.\n")
         sys.exit(1)
-    except json.JSONDecodeError as err:
-        sys.stderr.write(f"Error: Invalid JSON format in '{path}': {err}\n")
+    except json.JSONDecodeError as json_error:
+        sys.stderr.write(
+            f"Error: Invalid JSON format in '{target_path}': {json_error}\n"
+        )
         sys.exit(1)
-    except (KeyError, ValueError) as err:
-        clean_msg = str(err).strip("'\"")
-        sys.stderr.write(f"Error: Validation failed for '{path}': {clean_msg}\n")
+    except (KeyError, ValueError) as validation_error:
+        clean_message = str(validation_error).strip("'\"")
+        sys.stderr.write(
+            f"Error: Validation failed for '{target_path}': {clean_message}\n"
+        )
         sys.exit(1)
