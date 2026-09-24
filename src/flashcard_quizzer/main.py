@@ -8,6 +8,7 @@ from typing import List, Optional, Tuple
 
 from flashcard_quizzer.quiz_engine import QuizModeFactory
 from flashcard_quizzer.ui import QuizUI, display_exit_message
+from flashcard_quizzer.utils.deck_creator import create_deck_interactive
 from flashcard_quizzer.utils.file_handler import Flashcard, load_flashcards
 
 
@@ -22,11 +23,23 @@ def parse_arguments(args: Optional[List[str]] = None) -> argparse.Namespace:
     """
     parser = argparse.ArgumentParser(description="Flashcard Quizzer CLI Application")
     parser.add_argument(
+        "command",
+        nargs="?",
+        choices=["create"],
+        help="Optional subcommand ('create' to enter interactive deck creation mode).",
+    )
+    parser.add_argument(
         "-f",
         "--file",
         type=str,
         required=True,
         help="Path to JSON flashcard deck file.",
+    )
+    parser.add_argument(
+        "-c",
+        "--create",
+        action="store_true",
+        help="Launch interactive deck creator mode.",
     )
     parser.add_argument(
         "-m",
@@ -110,6 +123,10 @@ def main(sys_args: Optional[List[str]] = None) -> None:
         if e.code != 0:
             ui.display_error("Invalid or missing CLI arguments.")
             sys.exit(1)
+        sys.exit(0)
+
+    if parsed_args.create or parsed_args.command == "create":
+        create_deck_interactive(parsed_args.file, ui)
         sys.exit(0)
 
     try:
