@@ -1,6 +1,4 @@
-"""
-Terminal rendering, colors, and user interaction module for Flashcard Quizzer.
-"""
+"""Terminal rendering, colors, and user interaction module for Flashcard Quizzer."""
 
 from typing import List, Optional, Tuple
 
@@ -43,30 +41,30 @@ class QuizUI:
             "Type '[yellow]exit[/yellow]' or press [yellow]Ctrl+C[/yellow] at any time to quit.\n"
         )
 
-    def display_card_front(self, card: Flashcard) -> None:
+    def display_card_front(self, flashcard: Flashcard) -> None:
         """Display the front text of a flashcard.
 
         Args:
-            card: The Flashcard to present.
+            flashcard: The Flashcard instance to present.
         """
-        self.console.print(f"[bold cyan]Front:[/bold cyan] {card.front}")
+        self.console.print(f"[bold cyan]Front:[/bold cyan] {flashcard.front}")
 
     def get_user_answer(self) -> str:
-        """Prompt user for text input.
+        """Prompt user for text input and strip whitespace.
 
         Returns:
-            The input answer provided by the user.
+            str: The normalized input answer provided by the user.
         """
         return input("Your Answer: ").strip()
 
-    def display_feedback(self, is_correct: bool, expected_back: str) -> None:
+    def display_feedback(self, is_answer_correct: bool, expected_back: str) -> None:
         """Display colored terminal feedback based on answer accuracy.
 
         Args:
-            is_correct: True if the user's answer was correct, False otherwise.
+            is_answer_correct: True if user answer was correct, False otherwise.
             expected_back: The expected back text of the flashcard.
         """
-        if is_correct:
+        if is_answer_correct:
             self.console.print("[bold green]Correct![/bold green]\n")
         else:
             self.console.print(
@@ -92,9 +90,9 @@ class QuizUI:
 
         if missed_terms:
             self.console.print("\n[bold red]Missed Terms:[/bold red]")
-            for front, back in missed_terms:
+            for front_text, back_text in missed_terms:
                 self.console.print(
-                    f"  • [cyan]{front}[/cyan] -> Expected: [yellow]{back}[/yellow]"
+                    f"  • [cyan]{front_text}[/cyan] -> Expected: [yellow]{back_text}[/yellow]"
                 )
         else:
             self.console.print("\n[bold green]Great job! No missed terms.[/bold green]")
@@ -109,6 +107,10 @@ class QuizUI:
 
 
 def display_exit_message(console: Optional[Console] = None) -> None:
-    """Display graceful exit message on termination."""
+    """Display graceful exit message on termination.
+
+    Args:
+        console: Optional Console instance to print exit greeting to stdout.
+    """
     active_console = console if console is not None else Console()
     active_console.print("\n[yellow]Session ended. Goodbye![/yellow]")
