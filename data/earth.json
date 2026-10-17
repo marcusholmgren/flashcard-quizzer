@@ -1,0 +1,38 @@
+[
+  {
+    "front": "Which outermost, thinnest layer of Earth's solid surface do we live on?",
+    "back": "Crust"
+  },
+  {
+    "front": "Which thick, semi-solid layer of Earth lies between the crust and outer core?",
+    "back": "Mantle"
+  },
+  {
+    "front": "Which layer of Earth is composed of liquid iron and nickel, generating its magnetic field?",
+    "back": "Outer core"
+  },
+  {
+    "front": "Which extremely hot, solid iron-nickel sphere sits at Earth's center?",
+    "back": "Inner core"
+  },
+  {
+    "front": "In which lowest layer of the atmosphere does nearly all weather occur?",
+    "back": "Troposphere"
+  },
+  {
+    "front": "Which atmospheric layer contains the ozone layer that absorbs UV radiation?",
+    "back": "Stratosphere"
+  },
+  {
+    "front": "Which middle atmospheric layer burns up most meteors upon entry?",
+    "back": "Mesosphere"
+  },
+  {
+    "front": "Which atmospheric layer contains the ionosphere and where auroras and the ISS orbit occur?",
+    "back": "Thermosphere"
+  },
+  {
+    "front": "Which outermost atmospheric layer gradually fades into the vacuum of space?",
+    "back": "Exosphere"
+  }
+]
