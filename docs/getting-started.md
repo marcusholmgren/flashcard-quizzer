@@ -59,7 +59,7 @@ Store your decks in the `data/` directory (or anywhere on your machine).
 Once you have a JSON file ready, you can start the application:
 
 ```bash
-uv run main.py -f data/my_deck.json -m sequential
+uv run flashcard-quizzer -f data/greek_mythology.json -m sequential
 ```
 
 For more details on commands and flags, see the [CLI Reference](cli-reference.md).

@@ -40,17 +40,17 @@ Run the application directly using `uv run`.
 
 **Start a quiz with the adaptive mode:**
 ```bash
-uv run main.py -f data/python_basics.json -m adaptive
+uv run flashcard-quizzer -f data/greek_mythology.json -m adaptive
 ```
 
 **View stats after finishing:**
 ```bash
-uv run main.py -f data/python_basics.json -m random --stats
+uv run flashcard-quizzer -f data/greek_mythology.json -m random --stats
 ```
 
 **Create a new deck interactively:**
 ```bash
-uv run main.py -f data/my_new_deck.json
+uv run flashcard-quizzer -f data/my_new_deck.json
 ```
 If the file doesn't exist, the CLI will guide you through creating it, allowing you to append or overwrite cards interactively.
 
@@ -74,5 +74,5 @@ This project uses `uv` for seamless dependency management and task execution.
   ```
 - **Type Checking:**
   ```bash
-  uv run mypy .
+  uv run mypy src/.
   ```
