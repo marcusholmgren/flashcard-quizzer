@@ -1,6 +1,17 @@
+---
+icon: lucide/building-complex
+---
 # Architecture
 
 The Flashcard Quizzer CLI is built with a focus on maintainability, modularity, and adherence to Object-Oriented Programming (OOP) design patterns.
+
+<figure markdown="span">
+
+![Flashcard Quizzer Architecture](architecture.svg){ width="600" }
+
+<figcaption>Flashcard Quizzer Architecture</figcaption>
+
+</figure>
 
 ## Separation of Concerns
 
