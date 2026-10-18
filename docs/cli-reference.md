@@ -1,3 +1,6 @@
+---
+icon: lucide/square-terminal
+---
 # CLI Reference
 
 The Flashcard Quizzer provides a simple but powerful command-line interface.

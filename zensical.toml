@@ -15,6 +15,9 @@ nav = [
   { "Getting Started" = "getting-started.md" },
   { "Architecture" = "architecture.md" },
   { "CLI Reference" = "cli-reference.md" },
+  { "AI Edit Log" = "ai_edit_log.md" },
+  { "Report" = "marcus_report.md"},
+  { "Prompts" = "prompts.md" },
 ]
 
 # extra_css = ["stylesheets/extra.css"]

@@ -1,3 +1,6 @@
+---
+icon: lucide/square-play
+---
 # Getting Started
 
 Follow these steps to set up the Flashcard Quizzer on your local machine.

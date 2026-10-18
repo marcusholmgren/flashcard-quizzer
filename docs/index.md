@@ -1,3 +1,6 @@
+---
+icon: lucide/rocket
+---
 # Flashcard Quizzer CLI
 
 Welcome to the documentation for **Flashcard Quizzer CLI**, a command-line tool built to help you practice and memorize new concepts effectively.

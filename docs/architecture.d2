@@ -1,0 +1,200 @@
+direction: down
+
+classes: {
+  layer: {
+    style: {
+      border-radius: 10
+      stroke-width: 2
+      shadow: true
+    }
+  }
+  component: {
+    style: {
+      border-radius: 6
+      stroke-width: 2
+    }
+  }
+  interface: {
+    style: {
+      stroke-dash: 4
+      border-radius: 6
+    }
+  }
+  storage: {
+    shape: cylinder
+    style: {
+      stroke-width: 2
+    }
+  }
+}
+
+user: "Terminal User" {
+  shape: person
+  style: {
+    fill: "#e3f2fd"
+    stroke: "#1565c0"
+    font-color: "#0d47a1"
+  }
+}
+
+cli_layer: "CLI Entry Point & Orchestration (main.py)" {
+  class: layer
+  style: {
+    fill: "#f8f9fa"
+    stroke: "#495057"
+  }
+
+  argparse: "Argument Parser\nparse_arguments()" {
+    class: component
+    style.fill: "#e9ecef"
+    style.stroke: "#495057"
+  }
+
+  orchestrator: "Session Orchestrator\nmain() / run_quiz_session()\n_process_quiz_loop()" {
+    class: component
+    style.fill: "#e9ecef"
+    style.stroke: "#495057"
+  }
+
+  argparse -> orchestrator: "Namespace\n(--file, --mode, --create, --stats)"
+}
+
+ui_layer: "UI Presentation Layer (ui.py)" {
+  class: layer
+  style: {
+    fill: "#e8f5e9"
+    stroke: "#2e7d32"
+  }
+
+  quiz_ui: "QuizUI (Rich Console)" {
+    shape: class
+    style.fill: "#c8e6c9"
+    style.stroke: "#2e7d32"
+    console: "rich.console.Console"
+    display_welcome(total_cards, mode_name)
+    display_card_front(flashcard)
+    get_user_answer(): str
+    display_feedback(is_correct, expected_back)
+    display_summary(total, accuracy, missed)
+    display_error(message)
+  }
+}
+
+engine_layer: "Quiz Engine Layer (quiz_engine.py)" {
+  class: layer
+  style: {
+    fill: "#fff3e0"
+    stroke: "#ef6c00"
+  }
+
+  factory: "QuizModeFactory\n«Factory Pattern»" {
+    shape: class
+    style.fill: "#ffe0b2"
+    style.stroke: "#ef6c00"
+    "+create_mode(mode_name, flashcards)": QuizMode
+  }
+
+  strategy: "QuizMode (ABC)\n«Strategy Interface»" {
+    shape: class
+    style.fill: "#ffe0b2"
+    style.stroke: "#ef6c00"
+    "+has_remaining_cards()": bool
+    "+get_next_card()": Flashcard
+    "+record_answer(card, is_correct)": None
+  }
+
+  modes: "Concrete Quiz Strategies" {
+    style: {
+      fill: "#fff8e1"
+      stroke: "#ffa000"
+      stroke-dash: 3
+      border-radius: 6
+    }
+
+    sequential: "SequentialQuizMode\n(1 to N order)" {
+      class: component
+      style.fill: "#ffecb3"
+      style.stroke: "#ffa000"
+    }
+    random: "RandomQuizMode\n(Shuffled deck)" {
+      class: component
+      style.fill: "#ffecb3"
+      style.stroke: "#ffa000"
+    }
+    adaptive: "AdaptiveQuizMode\n(Re-queues missed cards)" {
+      class: component
+      style.fill: "#ffecb3"
+      style.stroke: "#ffa000"
+    }
+  }
+
+  factory -> strategy: "Instantiates" {
+    style.stroke-dash: 3
+  }
+  modes.sequential -> strategy: "implements" {
+    target-arrowhead.shape: triangle
+    target-arrowhead.style.filled: false
+  }
+  modes.random -> strategy: "implements" {
+    target-arrowhead.shape: triangle
+    target-arrowhead.style.filled: false
+  }
+  modes.adaptive -> strategy: "implements" {
+    target-arrowhead.shape: triangle
+    target-arrowhead.style.filled: false
+  }
+}
+
+data_layer: "Data & Utilities Layer (utils/)" {
+  class: layer
+  style: {
+    fill: "#f3e5f5"
+    stroke: "#6a1b9a"
+  }
+
+  file_handler: "File Handler (file_handler.py)\nload_flashcards()\n_validate_and_build_flashcard()" {
+    class: component
+    style.fill: "#e1bee7"
+    style.stroke: "#6a1b9a"
+  }
+
+  deck_creator: "Deck Creator (deck_creator.py)\ncreate_deck_interactive()\nsave_deck() (atomic write)" {
+    class: component
+    style.fill: "#e1bee7"
+    style.stroke: "#6a1b9a"
+  }
+
+  model: "Flashcard\n«dataclass»" {
+    shape: class
+    style.fill: "#e1bee7"
+    style.stroke: "#6a1b9a"
+    front: str
+    back: str
+  }
+
+  file_handler -> model: "Builds list of"
+  deck_creator -> model: "Serializes"
+  deck_creator -> file_handler: "Appends existing via"
+}
+
+json_decks: "JSON Flashcard Decks\n(data/*.json)" {
+  class: storage
+  style: {
+    fill: "#eceff1"
+    stroke: "#455a64"
+  }
+}
+
+# Cross-layer interactions
+user -> cli_layer.argparse: "CLI args & flags"
+user <-> ui_layer.quiz_ui: "Prompts & colored terminal I/O"
+
+cli_layer.orchestrator -> ui_layer.quiz_ui: "Renders cards, feedback & stats"
+cli_layer.orchestrator -> engine_layer.factory: "Requests quiz mode"
+cli_layer.orchestrator -> engine_layer.strategy: "Drives quiz loop"
+cli_layer.orchestrator -> data_layer.file_handler: "Loads & validates deck"
+cli_layer.orchestrator -> data_layer.deck_creator: "Launches (-c / create)"
+
+data_layer.deck_creator -> ui_layer.quiz_ui: "Interactive prompts"
+data_layer.file_handler <- json_decks: "Reads JSON"
+data_layer.deck_creator -> json_decks: "Writes JSON atomically"
