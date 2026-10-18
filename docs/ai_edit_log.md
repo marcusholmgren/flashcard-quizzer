@@ -146,7 +146,7 @@ Throughout the development of **Flashcard Quizzer**, AI tools were used iterativ
 - **Changes Made (with Antigravity) & Reasoning:**
     1. **Added PEP 517 `[build-system]` (`hatchling`) to `pyproject.toml`:** Without a `[build-system]` table, `uv sync` treated the project as a non-packaged virtual environment and skipped installing `flashcard_quizzer` in editable mode and skipped `[project.scripts]`. Adding `hatchling` made `uv sync` install the package properly into `.venv`.
     2. **Added `src/flashcard_quizzer/__main__.py`:** Enabled `uv run python -m flashcard_quizzer` execution and supported direct execution of `src/flashcard_quizzer/main.py`.
-    3. **Cleaned Up Stale Directories:** Removed the empty hyphenated `src/flashcard-quizzer/` directory and leftover root `utils/` directory.
+    3. **Cleaned Up Stale Directories:** Removed the empty hyphenated `src/flashcard-quizzer/` directory.
     4. **Created `data/sample_flashcards.json` and `tests/test_main.py`:** Resolved the missing sample file error from PR #3 and added entry-point unit tests (bringing the suite to 19 passing tests and 95% coverage).
 - **Outcome:** All three invocation methods (`uv run flashcard-quizzer`, `uv run python -m flashcard_quizzer`, and `uv run python src/flashcard_quizzer/main.py`) and the GitHub Actions CI pipeline passed with 0 errors.
 - **Lessons Learned:**
@@ -225,7 +225,7 @@ Throughout the development of **Flashcard Quizzer**, AI tools were used iterativ
   - **Positive:** The interactive deck creation module (`src/flashcard_quizzer/utils/deck_creator.py`) and its 273-line test suite (`tests/test_deck_creator.py`) were thorough, covering new deck creation, appending, overwriting, invalid overwrite choices, empty backs, and `KeyboardInterrupt` handling.
   - **Negative:** Because my prompt's `<context>` referred to `utils/deck_creator.py` instead of `src/flashcard_quizzer/utils/deck_creator.py`, Jules created both `src/flashcard_quizzer/utils/deck_creator.py` AND a redundant re-export wrapper in a root `utils/deck_creator.py` and `utils/__init__.py` just in case a test imported `utils.deck_creator`.
 - **Changes Made & Reasoning:**
-  - Verified that all tests imported from `flashcard_quizzer.utils.deck_creator` and removed the redundant root `utils/` directory so the repository strictly maintained the single `src/flashcard_quizzer/` package hierarchy.
+  - Verified that all tests imported from `flashcard_quizzer.utils.deck_creator` and the single `src/flashcard_quizzer/` package hierarchy.
 - **Outcome:** Users can interactively create new flashcard decks or append cards to existing decks via 
   ```bash
   uv run flashcard-quizzer --create <path>` or `uv run flashcard-quizzer create -f <path>

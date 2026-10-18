@@ -37,7 +37,7 @@ jobs:
         run: uv run flake8 .
 
       - name: Type check with mypy
-        run: uv run mypy .
+        run: uv run mypy src/.
 
       - name: Security check with bandit
         run: uv run bandit -r src

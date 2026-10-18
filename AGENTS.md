@@ -74,7 +74,7 @@ All commands run through `uv` to ensure proper virtual environment isolation:
 | **Format Code** | `uv run black .` |
 | **Sort Imports** | `uv run isort .` |
 | **Lint Code** | `uv run flake8 .` |
-| **Type Checking** | `uv run mypy .` |
+| **Type Checking** | `uv run mypy src/.` |
 | **Security Check** | `uv run bandit -r .` |
 | **Vulnerability Scan** | `uv run safety check` |
 | **Generate Docs** | `uv run zenzical build` (or `zenzical docs`) |

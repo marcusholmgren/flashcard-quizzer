@@ -50,7 +50,7 @@ uv run flashcard-quizzer -f data/greek_mythology.json -m random --stats
 
 **Create a new deck interactively:**
 ```bash
-uv run flashcard-quizzer -f data/my_new_deck.json
+uv run flashcard-quizzer -f data/my_new_deck.json --create
 ```
 If the file doesn't exist, the CLI will guide you through creating it, allowing you to append or overwrite cards interactively.
 
